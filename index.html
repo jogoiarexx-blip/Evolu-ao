@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#05070A">
+<meta name="application-name" content="EVOLUÇÃO">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EVOLUÇÃO">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>EVOLUÇÃO</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="splash-screen" aria-label="Carregando EVOLUÇÃO">
+  <div class="splash-inner">
+    <div class="splash-logo">⚡</div>
+    <div class="splash-name">EVOLU<span>Ç</span>ÃO</div>
+    <div class="splash-sub">Seu corpo. Seus hábitos. Sua evolução.</div>
+    <div class="loading-track"><div class="loading-bar"></div></div>
+  </div>
+</div>
+
+<div id="profile-gate" aria-hidden="true">
+  <div class="profile-shell">
+    <div class="profile-brand"><div class="mini-logo">⚡</div><div><b>EVOLUÇÃO</b><span>Perfil salvo neste aparelho</span></div></div>
+    <div class="profile-card">
+      <h1>Quem está evoluindo?</h1>
+      <p>Preencha uma vez. Seu nome, idade e altura ficam salvos neste aparelho e serão usados para personalizar suas metas.</p>
+      <div class="profile-fields">
+        <div class="profile-field"><label>Seu nome</label><input id="login-name" type="text" maxlength="24" autocomplete="name" placeholder="Como podemos te chamar?"></div>
+        <div class="profile-two">
+          <div class="profile-field"><label>Idade</label><input id="login-age" type="number" inputmode="numeric" min="10" max="100" placeholder="Ex: 32"></div>
+          <div class="profile-field"><label>Altura</label><input id="login-height" type="number" inputmode="numeric" min="100" max="250" placeholder="cm"></div>
+        </div>
+      </div>
+      <button class="profile-enter" id="btn-profile-enter">Entrar no EVOLUÇÃO</button>
+      <div class="profile-note">Os dados ficam no armazenamento local do navegador. Nenhuma conta online é criada nesta V1.</div>
+    </div>
+  </div>
+</div>
+
+
+<canvas id="confetti-canvas"></canvas>
+<div id="toast-container"></div>
+
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark" id="greeting">EVOLU<span class="dot">Ç</span>ÃO</div>
+      <div class="sub" id="sub-title">Seu corpo. Seus hábitos. Sua evolução.</div>
+    </div>
+    <div class="top-actions">
+      <div class="streak-chip"><span>🔥</span><span id="streak-num">0</span></div>
+      <button id="btn-settings" class="icon-btn" aria-label="Configurações">⚙️</button>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ================= INÍCIO ================= -->
+    <section class="view active" id="view-inicio">
+
+      <div class="journey-card glass">
+        <div class="journey-head">
+          <div class="weight-now" id="weight-now">-- <span>kg</span></div>
+          <div class="weight-goal">meta<b id="goal-label">-- kg</b></div>
+        </div>
+        <div class="journey-bar-wrap">
+          <div class="journey-bar"><div class="journey-bar-fill" id="journey-fill" style="width:0%"></div></div>
+          <div class="journey-pct" id="journey-pct">0% da evolução</div>
+        </div>
+        <div class="journey-mini">
+          <div class="jm"><span>Faltam</span><b id="home-remaining">-- kg</b></div>
+          <div class="jm"><span>Sequência</span><b id="home-streak">0 dias</b></div>
+          <div class="jm"><span>Nível</span><b id="level-name">Primeiro Passo</b></div>
+          <div class="jm"><span>Semanas</span><b id="weeks-done">0</b></div>
+        </div>
+      </div>
+
+
+      <div class="score-card glass">
+        <div class="score-top">
+          <div class="score-ring" id="score-ring"><div class="score-num"><span id="daily-score">0</span></div></div>
+          <div class="score-copy"><b id="score-title">Comece o dia</b><span id="score-desc">Cada hábito concluído aumenta seu score de evolução.</span><div class="mini-progress"><span id="score-progress" style="width:0%"></span></div></div>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-card"><div class="q-label">Calorias hoje</div><div class="q-value"><span id="calories-today">0</span> kcal</div><div class="q-sub">meta <span id="calories-goal-mini">--</span></div><div class="quick-actions"><button data-cal="100">+100</button><button data-cal="250">+250</button><button id="cal-reset">zerar</button></div></div>
+          <div class="quick-card"><div class="q-label">Proteína hoje</div><div class="q-value"><span id="protein-today">0</span> g</div><div class="q-sub">meta <span id="protein-goal-mini">--</span></div><div class="quick-actions"><button data-pro="10">+10g</button><button data-pro="25">+25g</button><button id="pro-reset">zerar</button></div></div>
+        </div>
+        <div class="habit-input-grid">
+          <div class="habit-input-card"><label>Passos de hoje</label><div class="habit-input-row"><input id="steps-input" type="number" min="0" step="100" inputmode="numeric" placeholder="0"><span>/ <b id="steps-goal-inline">--</b></span></div></div>
+          <div class="habit-input-card"><label>Sono da última noite</label><div class="habit-input-row"><input id="sleep-input" type="number" min="0" max="14" step="0.1" inputmode="decimal" placeholder="0"><span>/ <b id="sleep-goal-inline">8h</b></span></div></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Sua semana</h2>
+      <div class="weekly-focus-card glass">
+        <div class="weekly-focus-head">
+          <div><h3>📅 Metas semanais</h3><span id="week-range-home">Esta semana</span></div>
+          <div class="week-score-pill"><b id="week-score-home">0%</b><span>ritmo</span></div>
+        </div>
+        <div class="weekly-goal-list">
+          <div class="weekly-goal-row"><div class="wgr-top"><span>🏋️ Treinos</span><b id="home-week-workouts">0 de 4</b></div><div class="wgr-bar"><i id="home-week-workouts-bar"></i></div></div>
+          <div class="weekly-goal-row"><div class="wgr-top"><span>🥩 Dias na meta de proteína</span><b id="home-week-protein-days">0 de 5</b></div><div class="wgr-bar"><i id="home-week-protein-bar"></i></div></div>
+          <div class="weekly-goal-row"><div class="wgr-top"><span>⚖️ Pesagens</span><b id="home-week-weighins">0 de 3</b></div><div class="wgr-bar"><i id="home-week-weighins-bar"></i></div></div>
+        </div>
+        <div class="weekly-mini-grid">
+          <div><span>Proteína média</span><b id="home-week-protein-avg">--</b></div>
+          <div><span>Peso médio</span><b id="home-week-weight-avg">--</b></div>
+          <div><span>Dias consistentes</span><b id="home-week-consistent">0</b></div>
+        </div>
+        <div class="smart-alert-box" id="smart-alert-box">
+          <div class="smart-alert-head"><b>🧠 Orientação da semana</b><span id="smart-alert-count">0 alertas</span></div>
+          <div id="smart-alert-list"></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Sua missão de hoje</h2>
+      <div class="mission-card glass">
+        <div class="mission-title">
+          <h3 id="mission-heading">Fase <span id="phase-num">1</span> · dia <span id="phase-day">0</span>/7</h3>
+          <div class="level-tag" id="level-tag">Nível 1</div>
+        </div>
+        <div class="mission-list" id="mission-list"></div>
+        <button class="btn-complete" id="btn-complete" disabled>Marque os itens acima</button>
+        <button class="persist-link" id="btn-persist" style="display:none;">✨ Ativar Modo Persistência (dia difícil, ainda vale)</button>
+        <div id="banner-slot"></div>
+        <div class="quote-strip" id="quote-strip"></div>
+      </div>
+
+      <div class="phase-card glass">
+        <div class="phase-head"><div class="phase-title">Plano atual</div><div class="phase-badge" id="phase-badge">FASE 1</div></div>
+        <div class="compact-plan"><div class="cp-copy"><b id="plan-summary">Metas ajustadas ao seu perfil</b><span id="phase-note"></span></div><div class="cp-badge" id="plan-focus">FOCO</div></div>
+        <div class="mode-switch">
+          <button class="mode-btn" id="mode-cut" data-mode="emagrecer">🔥 Emagrecimento</button>
+          <button class="mode-btn" id="mode-mass" data-mode="massa">💪 Ganho de massa</button>
+        </div>
+        <div class="phase-grid" style="display:none" aria-hidden="true">
+          <div class="phase-metric"><div class="k">Calorias alvo</div><div class="v" id="calorie-target">-- kcal</div></div>
+          <div class="phase-metric"><div class="k">Proteína</div><div class="v" id="protein-target">-- g</div></div>
+          <div class="phase-metric"><div class="k">Passos</div><div class="v" id="steps-target">--</div></div>
+          <div class="phase-metric"><div class="k">Sono</div><div class="v" id="sleep-target">8 h</div></div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ================= TREINO ================= -->
+    <section class="view" id="view-treino">
+      <div class="view-hero"><div><h2>🏋️ Treino</h2><p>Registre o treino do dia, carga usada e acompanhe a execução.</p></div><span class="tag-soft">V1</span></div>
+      <div class="workout-card glass">
+        <div class="workout-head"><div><h3>Treino de hoje</h3><div class="metric-note" id="workout-plan-label">Escolha a ficha e registre cada série.</div></div><span class="tag-soft" id="workout-status">Não iniciado</span></div>
+        <div class="profile-workout-note" id="workout-profile-note"></div>
+      <div class="workout-split-card">
+          <div class="workout-split-copy"><b>Divisão</b><span>Você pode trocar sem apagar o histórico.</span></div>
+          <select id="workout-split" class="workout-split-select" aria-label="Divisão de treino">
+            <option value="ABC">A/B/C</option>
+            <option value="AB">A/B</option>
+            <option value="ABCD">A/B/C/D</option>
+            <option value="FULL">Full Body</option>
+            <option value="UL">Upper / Lower</option>
+            <option value="PPL">Push / Pull / Legs</option>
+            <option value="CUSTOM">Personalizado</option>
+          </select>
+        </div>
+        <div class="workout-tabs" id="workout-tabs"></div>
+        <div class="workout-tools"><button class="primary-lite" id="btn-edit-workout" type="button">✏️ Editar ficha</button><button id="btn-rename-workout" type="button">✎ Renomear dia</button><button id="btn-reset-workout" type="button">↺ Restaurar padrão</button></div>
+        <div class="workout-custom-note" id="workout-custom-note">Você pode personalizar exercícios, séries, repetições e descanso.</div>
+        <div class="workout-overview">
+          <div class="workout-metric"><b id="workout-ex-done">0/0</b><span>Exercícios</span></div>
+          <div class="workout-metric"><b id="workout-sets-done">0/0</b><span>Séries</span></div>
+          <div class="workout-metric"><b id="workout-volume">0 kg</b><span>Volume</span></div>
+        </div>
+        <div class="workout-progress-track"><div class="workout-progress-fill" id="workout-progress-fill"></div></div>
+        <div class="exercise-list" id="exercise-list"></div>
+        <button class="workout-finish" id="btn-finish-workout" type="button" disabled>Conclua as séries para finalizar</button>
+        <div class="workout-hint">💡 Marque cada série quando terminar. Carga e repetições ficam salvas como referência para o próximo treino.</div>
+        <div class="metric-note">A carga fica salva por exercício. Use o cronômetro de descanso entre as séries.</div>
+      </div>
+
+      <h2 class="section-title">Evolução na academia</h2>
+      <div class="workout-insights-grid">
+        <div class="card glass workout-insight">
+          <span>Último treino</span>
+          <b id="last-workout-summary">Nenhum ainda</b>
+        </div>
+        <div class="card glass workout-insight">
+          <span>Recordes pessoais</span>
+          <b id="pr-count">0</b>
+        </div>
+      </div>
+      <div class="card glass workout-history-card">
+        <div class="workout-history-head"><h3>Histórico de treinos</h3><span class="tag-soft" id="workout-history-count">0 sessões</span></div>
+        <div class="workout-history-list" id="workout-history-list"></div>
+      </div>
+      <div class="card glass workout-pr-card">
+        <div class="workout-history-head"><h3>🏆 Recordes pessoais</h3><span class="tag-soft">melhores séries</span></div>
+        <div class="workout-pr-list" id="workout-pr-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= NUTRIÇÃO ================= -->
+    <section class="view" id="view-nutricao">
+      <div class="view-hero">
+        <div><h2>🍽️ Nutrição</h2><p>Registre refeições, acompanhe macros e veja sua consistência semanal.</p></div>
+        <span class="tag-soft">referências</span>
+      </div>
+
+      <div class="nutrition-card glass nutrition-overview">
+        <div class="nutrition-head"><h3 id="nutrition-day-title">Hoje</h3><span class="tag-soft" id="nutri-status">Em andamento</span></div>
+        <div class="nutrition-day-nav">
+          <button type="button" id="nutri-prev-day" aria-label="Dia anterior">‹</button>
+          <div class="nutrition-day-copy"><b id="nutri-day-label">Hoje</b><span id="nutri-date-label">--/--/----</span></div>
+          <button type="button" id="nutri-next-day" aria-label="Próximo dia">›</button>
+          <button type="button" class="nutri-today-btn" id="nutri-go-today">Hoje</button>
+        </div>
+
+        <div class="nutrition-progress-list">
+          <div class="nutrition-progress-item">
+            <div class="npi-head"><span>Calorias</span><b id="nutri-cal">0 / -- kcal</b></div>
+            <div class="npi-bar"><i id="nutri-cal-bar"></i></div>
+          </div>
+          <div class="nutrition-progress-item">
+            <div class="npi-head"><span>Proteína</span><b id="nutri-pro">0 / -- g</b></div>
+            <div class="npi-bar"><i id="nutri-pro-bar"></i></div>
+          </div>
+          <div class="nutrition-progress-item compact">
+            <div class="npi-head"><span>Carboidratos</span><b id="nutri-carb">0 / -- g</b></div>
+            <div class="npi-bar"><i id="nutri-carb-bar"></i></div>
+          </div>
+          <div class="nutrition-progress-item compact">
+            <div class="npi-head"><span>Gorduras</span><b id="nutri-fat">0 / -- g</b></div>
+            <div class="npi-bar"><i id="nutri-fat-bar"></i></div>
+          </div>
+        </div>
+
+        <div class="nutri-hint">Calorias e macros são referências estimadas do perfil. Você pode registrar só calorias/proteína ou preencher todos os macros.</div>
+      </div>
+
+      <h2 class="section-title" id="meal-entry-title">Adicionar refeição</h2>
+      <div class="nutrition-card glass meal-entry-card">
+        <div class="meal-entry-top">
+          <input id="meal-name-input" type="text" maxlength="40" placeholder="Nome da refeição ou alimento">
+          <select id="meal-type-input" aria-label="Tipo da refeição">
+            <option value="Café da manhã">Café da manhã</option>
+            <option value="Almoço">Almoço</option>
+            <option value="Lanche">Lanche</option>
+            <option value="Jantar">Jantar</option>
+            <option value="Ceia">Ceia</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="meal-macro-grid">
+          <label><span>kcal</span><input id="meal-cal-input" type="number" min="0" inputmode="numeric" placeholder="0"></label>
+          <label><span>proteína g</span><input id="meal-pro-input" type="number" min="0" inputmode="decimal" placeholder="0"></label>
+          <label><span>carbo g</span><input id="meal-carb-input" type="number" min="0" inputmode="decimal" placeholder="0"></label>
+          <label><span>gordura g</span><input id="meal-fat-input" type="number" min="0" inputmode="decimal" placeholder="0"></label>
+        </div>
+        <div class="meal-entry-actions">
+          <button class="btn-secondary" type="button" id="btn-cancel-meal-edit" style="display:none;">Cancelar</button>
+          <button class="btn-complete" type="button" id="btn-add-meal">Adicionar refeição</button>
+        </div>
+      </div>
+
+      <h2 class="section-title" id="meal-list-title">Refeições do dia</h2>
+      <div class="nutrition-card glass">
+        <div class="meal-history" id="meal-history"></div>
+      </div>
+
+      <h2 class="section-title">Últimos 7 dias</h2>
+      <div class="nutrition-card glass">
+        <div class="nutrition-week-grid">
+          <div><span>Média kcal</span><b id="nutri-week-cal">--</b></div>
+          <div><span>Média proteína</span><b id="nutri-week-pro">--</b></div>
+          <div><span>Dias registrados</span><b id="nutri-week-days">0/7</b></div>
+        </div>
+        <div class="nutrition-week-list" id="nutrition-week-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= CALENDÁRIO ================= -->
+    <section class="view" id="view-calendario">
+      <h2 class="section-title">Seu progresso no mês</h2>
+      <div class="cal-card glass">
+        <div class="cal-header">
+          <div class="cal-title" id="cal-title">Julho 2026</div>
+          <div class="cal-nav"><button id="cal-prev">‹</button><button id="cal-next">›</button></div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <span><span class="legend-dot" style="background:rgba(45,212,191,0.6)"></span>concluído</span>
+          <span><span class="legend-dot" style="background:rgba(255,255,255,0.15)"></span>ainda não feito</span>
+          <span><span class="legend-dot" style="border:1px solid var(--indigo)"></span>hoje</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PESO ================= -->
+    <section class="view" id="view-peso">
+      <div class="view-hero"><div><h2>📈 Progresso</h2><p>Peso, medidas e tendência corporal em um só lugar.</p></div></div>
+      <h2 class="section-title">Sua meta</h2>
+      <div class="card glass">
+        <div class="goal-row">
+          <div class="g-item"><div class="g-label">Meta</div><div class="g-value" id="peso-meta">-- kg</div></div>
+          <div class="g-item middle"><div class="g-label">Faltam</div><div class="g-value" id="peso-faltam">-- kg</div></div>
+          <div class="g-item"><div class="g-label">Atual</div><div class="g-value" id="peso-atual">-- kg</div></div>
+        </div>
+        <div class="weight-form">
+          <input type="number" step="0.1" inputmode="decimal" id="weight-input" placeholder="Registrar peso de hoje">
+          <button id="btn-save-weight">Salvar</button>
+        </div>
+        <div class="trend-strip"><div class="trend-box"><div class="k">Média 7 dias</div><div class="v" id="weight-avg7">--</div></div><div class="trend-box"><div class="k">Tendência</div><div class="v" id="weight-trend">--</div></div></div>
+        <canvas id="chart"></canvas>
+        <div class="hist-list" id="hist-list"></div>
+      </div>
+
+      <h2 class="section-title">Medidas corporais</h2>
+      <div class="measure-card glass">
+        <div class="measure-grid">
+          <div class="measure-field"><label>Cintura (cm)</label><input id="m-waist" type="number" step="0.1"></div>
+          <div class="measure-field"><label>Abdômen (cm)</label><input id="m-abdomen" type="number" step="0.1"></div>
+          <div class="measure-field"><label>Peito (cm)</label><input id="m-chest" type="number" step="0.1"></div>
+          <div class="measure-field"><label>Braço (cm)</label><input id="m-arm" type="number" step="0.1"></div>
+          <div class="measure-field"><label>Coxa (cm)</label><input id="m-thigh" type="number" step="0.1"></div>
+          <div class="measure-field"><label>Quadril (cm)</label><input id="m-hip" type="number" step="0.1"></div>
+        </div>
+        <div class="measure-actions"><button class="btn-complete" id="btn-save-measures">Salvar medidas</button></div>
+        <div class="measure-chart-head">
+          <select id="measure-chart-type">
+            <option value="waist">Cintura</option><option value="abdomen">Abdômen</option>
+            <option value="chest">Peito</option><option value="arm">Braço</option>
+            <option value="thigh">Coxa</option><option value="hip">Quadril</option>
+          </select>
+          <span id="measure-chart-change">--</span>
+        </div>
+        <canvas id="measure-chart"></canvas>
+        <div class="weekly-note" id="measure-last">Nenhuma medida registrada ainda.</div><div class="measure-history" id="measure-history"></div>
+      </div>
+
+    </section>
+
+    <!-- ================= ESTATÍSTICAS ================= -->
+    <section class="view" id="view-stats">
+      <h2 class="section-title">Estatísticas</h2>
+      <div class="stats-list" id="stats-list"></div>
+
+      <h2 class="section-title">Check-in dos últimos 7 dias</h2>
+      <div class="weekly-card glass">
+        <div class="weekly-head"><h3>📈 Resumo semanal</h3><span class="tag-soft" id="weekly-grade">--</span></div>
+        <div class="weekly-grid">
+          <div class="weekly-item"><div class="w-k">Dias concluídos</div><div class="w-v" id="week-days">0/7</div></div>
+          <div class="weekly-item"><div class="w-k">Aderência</div><div class="w-v" id="week-adherence">0%</div></div>
+          <div class="weekly-item"><div class="w-k">Treinos força</div><div class="w-v" id="week-workouts">0</div></div>
+          <div class="weekly-item"><div class="w-k">Peso 7 dias</div><div class="w-v" id="week-weight">--</div></div>
+        </div>
+        <div class="weekly-note" id="weekly-note">Complete suas missões para gerar seu primeiro resumo.</div>
+      </div>
+
+    </section>
+
+    <!-- ================= MEDALHAS ================= -->
+    <section class="view" id="view-medalhas">
+      <h2 class="section-title">Sua evolução</h2>
+      <div class="card glass level-card">
+        <div class="lvl-emoji" id="lvl-emoji">🐾</div>
+        <div>
+          <div class="lvl-name" id="lvl-name-big">Primeiro Passo</div>
+          <div class="lvl-sub" id="lvl-sub">Nível 1</div>
+        </div>
+      </div>
+      <div class="card glass xp-card">
+        <div><div class="xp-label">Experiência total</div><div class="xp-num"><span id="xp-num">0</span> XP</div></div>
+        <div style="font-size:32px;">⭐</div>
+      </div>
+      <h2 class="section-title">Medalhas</h2>
+      <div class="medal-grid" id="medal-grid"></div>
+    </section>
+
+
+    <!-- ================= MAIS ================= -->
+    <section class="view" id="view-mais">
+      <div class="view-hero"><div><h2>Mais</h2><p>Histórico, estatísticas e conquistas da sua evolução.</p></div></div>
+      <div class="more-grid">
+        <button class="more-card" data-go="calendario"><span class="ico">📅</span><b>Calendário</b><span>Veja os dias concluídos e sua consistência.</span></button>
+        <button class="more-card" data-go="stats"><span class="ico">📊</span><b>Estatísticas</b><span>Resumo semanal, sequência, água e atividade.</span></button>
+        <button class="more-card" data-go="medalhas"><span class="ico">🏅</span><b>Conquistas</b><span>Níveis, XP e medalhas desbloqueadas.</span></button>
+        <button class="more-card" id="more-settings"><span class="ico">⚙️</span><b>Perfil</b><span>Metas, lembretes e configurações pessoais.</span></button>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="quick-sheet-overlay" id="quick-sheet-overlay" aria-hidden="true">
+    <div class="quick-sheet" role="dialog" aria-modal="true" aria-label="Ações rápidas">
+      <div class="quick-sheet-head"><b>Registrar agora</b><span>Escolha uma ação</span></div>
+      <div class="quick-sheet-grid">
+        <button class="quick-action" type="button" data-quick="workout"><span class="qa-icon">🏋️</span><span class="qa-label">Treino</span></button>
+        <button class="quick-action" type="button" data-quick="meal"><span class="qa-icon">🍽️</span><span class="qa-label">Refeição</span></button>
+        <button class="quick-action" id="quick-water" type="button" data-quick="water"><span class="qa-icon">💧</span><span class="qa-label">Água</span></button>
+        <button class="quick-action" type="button" data-quick="weight"><span class="qa-icon">⚖️</span><span class="qa-label">Peso</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="quick-fab-label" id="quick-fab-label">registrar</div>
+  <button class="quick-fab" id="quick-fab" type="button" aria-label="Abrir ações rápidas" aria-expanded="false">＋</button>
+
+  <nav class="bottomnav">
+    <button class="nav-btn active" data-view="inicio"><span class="n-icon">🏠</span>Hoje</button>
+    <button class="nav-btn" data-view="treino"><span class="n-icon">🏋️</span>Treino</button>
+    <button class="nav-btn" data-view="nutricao"><span class="n-icon">🍽️</span>Nutrição</button>
+    <button class="nav-btn" data-view="peso"><span class="n-icon">📈</span>Progresso</button>
+    <button class="nav-btn" data-view="mais"><span class="n-icon">•••</span>Mais</button>
+  </nav>
+</div>
+
+<!-- ================= ONBOARDING ================= -->
+<div class="modal-overlay" id="onboarding-modal">
+  <div class="modal-box">
+    <div class="ob-progress">
+      <span data-step="1"></span><span data-step="2"></span><span data-step="3"></span><span data-step="4"></span><span data-step="5"></span>
+    </div>
+
+    <div class="ob-step active" data-step="1">
+      <div class="ob-title">Prazer em te conhecer 👋</div>
+      <div class="ob-sub">Vamos personalizar sua evolução.</div>
+      <div class="settings-form">
+        <div class="field"><label>Seu nome</label><input type="text" id="ob-name" maxlength="20" placeholder="Como podemos te chamar?"></div>
+        <div class="field"><label>Idade</label><input type="number" id="ob-age" min="10" max="100" placeholder="Ex: 32"></div>
+      </div>
+      <div class="ob-actions"><button class="ob-next" data-next="2">Próximo</button></div>
+    </div>
+
+    <div class="ob-step" data-step="2">
+      <div class="ob-title">Um pouco mais sobre você</div>
+      <div class="ob-sub">Só falta uma informação para personalizar melhor as estimativas.</div>
+      <div class="settings-form">
+        <div class="field">
+          <label>Sexo</label>
+          <select id="ob-sex">
+            <option value="F">Feminino</option>
+            <option value="M">Masculino</option>
+            <option value="O">Prefiro não dizer</option>
+          </select>
+        </div>
+        <div class="field" style="display:none"><label>Altura (cm)</label><input type="number" id="ob-height" min="100" max="250" placeholder="Ex: 170"></div>
+      </div>
+      <div class="ob-actions">
+        <button class="ob-back" data-back="1">Voltar</button>
+        <button class="ob-next" data-next="3">Próximo</button>
+      </div>
+    </div>
+
+    <div class="ob-step" data-step="3">
+      <div class="ob-title">Seu ponto de partida</div>
+      <div class="ob-sub">Sem pressão — é só o começo da jornada.</div>
+      <div class="settings-form">
+        <div class="field-row">
+          <div class="field"><label>Peso atual (kg)</label><input type="number" step="0.1" id="ob-weight-start" placeholder="Ex: 104"></div>
+          <div class="field"><label>Peso objetivo (kg)</label><input type="number" step="0.1" id="ob-weight-goal" placeholder="Ex: 85"></div>
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="ob-back" data-back="2">Voltar</button>
+        <button class="ob-next" data-next="4">Próximo</button>
+      </div>
+    </div>
+
+    <div class="ob-step" data-step="4">
+      <div class="ob-title">Qual seu objetivo principal?</div>
+      <div class="ob-sub">Isso ajuda a ajustar o tom das suas missões.</div>
+      <div class="goal-chip-grid" id="ob-goal-grid">
+        <div class="goal-chip" data-goal="emagrecer">Emagrecer</div>
+        <div class="goal-chip" data-goal="massa">Ganhar massa muscular</div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+          <label>Prioridade de treino</label>
+          <select id="ob-training-priority">
+            <option value="geral">Corpo todo</option>
+            <option value="gluteos">Glúteos e pernas</option>
+            <option value="superiores">Superiores</option>
+            <option value="forca">Força geral</option>
+          </select>
+        </div>
+        <div class="ob-actions">
+        <button class="ob-back" data-back="3">Voltar</button>
+        <button class="ob-next" data-next="5" id="ob-to-summary">Ver meu resumo</button>
+      </div>
+    </div>
+
+    <div class="ob-step" data-step="5">
+      <div class="ob-title">Seu plano de evolução</div>
+      <div class="ob-goal-hero" id="ob-goal-hero">104 kg <span>➜</span> 85 kg</div>
+      <div class="ob-summary-row"><span class="s-label">IMC atual</span><span class="s-value" id="ob-imc">--</span></div>
+      <div class="ob-summary-row"><span class="s-label">Peso ideal (referência)</span><span class="s-value" id="ob-ideal">--</span></div>
+      <div class="ob-summary-row"><span class="s-label">Água sugerida por dia</span><span class="s-value" id="ob-water">--</span></div>
+      <div class="ob-disclaimer">O foco não é apenas o peso — é a sua evolução. Corpo, hábitos, força e saúde avançando juntos. Estes números são apenas uma referência inicial.</div>
+      <div class="ob-actions">
+        <button class="ob-back" data-back="4">Voltar</button>
+        <button class="ob-next" id="ob-finish">Começar minha evolução</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box" style="text-align:left; max-width:380px;">
+    <h3 style="margin-bottom:16px;">Meu perfil</h3>
+    <div class="settings-form">
+      <div class="field"><label>Nome</label><input type="text" id="cfg-name" maxlength="20"></div>
+      <div class="field-row">
+        <div class="field"><label>Idade</label><input type="number" id="cfg-age" min="10" max="100"></div>
+        <div class="field"><label>Altura (cm)</label><input type="number" id="cfg-height" min="100" max="250"></div>
+      </div>
+
+      <div class="field">
+        <label>Sexo para estimativas</label>
+        <select id="cfg-sex">
+          <option value="F">Feminino</option>
+          <option value="M">Masculino</option>
+          <option value="O">Prefiro não dizer</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Prioridade de treino</label>
+        <select id="cfg-training-priority">
+          <option value="geral">Corpo todo</option>
+          <option value="gluteos">Glúteos e pernas</option>
+          <option value="superiores">Superiores</option>
+          <option value="forca">Força geral</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Peso inicial (kg)</label><input type="number" step="0.1" id="cfg-weight-start"></div>
+        <div class="field"><label>Peso objetivo (kg)</label><input type="number" step="0.1" id="cfg-weight-goal"></div>
+      </div>
+      <div class="field">
+        <label>Objetivo principal</label>
+        <div class="goal-chip-grid" id="cfg-goal-grid">
+          <div class="goal-chip" data-goal="emagrecer">🔥 Emagrecimento</div>
+          <div class="goal-chip" data-goal="massa">💪 Ganho de massa</div>
+        </div>
+      </div>
+      <div class="field"><label>Nível de atividade</label><select id="cfg-activity"><option value="sedentario">Sedentário</option><option value="leve">Levemente ativo</option><option value="moderado">Moderadamente ativo</option><option value="alto">Muito ativo</option></select></div>
+      <div class="field-row"><div class="field"><label>Meta de passos</label><input type="number" id="cfg-steps" min="1000" max="30000" step="500"></div><div class="field"><label>Meta de sono (h)</label><input type="number" id="cfg-sleep" min="5" max="12" step="0.5"></div></div>
+      <div class="field"><label>Máximo de minutos por atividade</label><input type="number" id="cfg-max-min" min="15" max="120"></div>
+      <div class="field"><label>Meta de água por dia (ml)</label><input type="number" id="cfg-water" min="500" max="6000" step="250"></div>
+
+      <div class="settings-section-title">Nutrição</div>
+      <div class="toggle-row">
+        <div><div class="t-label">Metas nutricionais manuais</div><div class="t-desc">Use seus próprios valores em vez das estimativas automáticas.</div></div>
+        <label class="switch"><input type="checkbox" id="cfg-manual-nutrition"><span class="slider"></span></label>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Calorias</label><input type="number" id="cfg-manual-calories" min="1000" max="6000" step="50"></div>
+        <div class="field"><label>Proteína (g)</label><input type="number" id="cfg-manual-protein" min="30" max="400" step="5"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Carboidratos (g)</label><input type="number" id="cfg-manual-carbs" min="0" max="1000" step="5"></div>
+        <div class="field"><label>Gorduras (g)</label><input type="number" id="cfg-manual-fat" min="0" max="300" step="5"></div>
+      </div>
+
+      <div class="settings-section-title">Metas semanais</div>
+      <div class="field-row">
+        <div class="field"><label>Treinos / semana</label><input type="number" id="cfg-weekly-workouts" min="1" max="7" step="1"></div>
+        <div class="field"><label>Dias proteína / semana</label><input type="number" id="cfg-weekly-protein-days" min="1" max="7" step="1"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Pesagens / semana</label><input type="number" id="cfg-weekly-weighins" min="1" max="7" step="1"></div>
+        <div class="field"><label>Horário dos alertas</label><input type="time" id="cfg-smart-alert-time"></div>
+      </div>
+      <div class="toggle-row">
+        <div><div class="t-label">Alertas inteligentes</div><div class="t-desc">Avisa quando seu ritmo semanal estiver abaixo da meta, sem cobrar perfeição.</div></div>
+        <label class="switch"><input type="checkbox" id="cfg-smart-alert-enabled"><span class="slider"></span></label>
+      </div>
+
+      <div class="field"><label>Horário do lembrete diário</label><input type="time" id="cfg-reminder-time"></div>
+      <div class="toggle-row">
+        <div><div class="t-label">Missão diária</div><div class="t-desc">Lembra se o dia ainda não foi concluído</div></div>
+        <label class="switch"><input type="checkbox" id="cfg-reminder-enabled"><span class="slider"></span></label>
+      </div>
+      <div class="notification-pref-row">
+        <div class="notification-pref-copy"><b>🍽️ Nutrição</b><span>Lembra se ainda não houver refeição registrada</span></div>
+        <input type="time" id="cfg-nutrition-reminder-time" aria-label="Horário do lembrete de nutrição">
+        <label class="switch"><input type="checkbox" id="cfg-nutrition-reminder-enabled"><span class="slider"></span></label>
+      </div>
+      <div class="notification-pref-row">
+        <div class="notification-pref-copy"><b>💧 Água</b><span>Lembra se a meta de água ainda estiver incompleta</span></div>
+        <input type="time" id="cfg-water-reminder-time" aria-label="Horário do lembrete de água">
+        <label class="switch"><input type="checkbox" id="cfg-water-reminder-enabled"><span class="slider"></span></label>
+      </div>
+
+      <div class="settings-info-card install-card">
+        <div><b>📲 Instalar EVOLUÇÃO</b><span id="pwa-install-status">Verificando disponibilidade…</span></div>
+        <button class="btn-secondary mini-settings-btn" type="button" id="btn-install-app">Instalar</button>
+      </div>
+      <div class="settings-info-card">
+        <div><b>🔔 Notificações</b><span id="notification-status">Verificando permissão…</span></div>
+        <button class="btn-secondary mini-settings-btn" type="button" id="btn-enable-notifications">Permitir</button>
+      </div>
+      <div class="notification-limit-note">Lembretes locais funcionam enquanto o app está ativo. Para notificações garantidas com o app totalmente fechado, será necessário Web Push em uma etapa futura.</div>
+      <div class="settings-info-card">
+        <div><b>⬆️ Atualizações</b><span id="pwa-update-status">Modo local · atualização manual</span></div>
+        <button class="btn-secondary mini-settings-btn" type="button" id="btn-check-update">Verificar</button>
+      </div>
+      <button class="btn-complete" id="btn-save-settings" style="margin-top:4px;">Salvar</button>
+      <div class="field"><label>Backup dos seus dados</label><div class="backup-row"><button class="btn-secondary" type="button" id="btn-export-data">Exportar</button><button class="btn-secondary" type="button" id="btn-import-data">Importar</button></div><input class="hidden-file" id="import-file" type="file" accept="application/json,.json"></div>
+
+      <div class="settings-section-title">Perfil e dados</div>
+      <div class="danger-actions">
+        <button class="btn-secondary" type="button" id="btn-restart-onboarding">Refazer configuração inicial</button>
+        <button class="btn-danger" type="button" id="btn-reset-profile">Apagar todos os dados</button>
+      </div>
+
+      <button class="btn-secondary" id="btn-close-settings">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EDITOR DE TREINO ================= -->
+<div class="modal-overlay" id="workout-editor-modal">
+  <div class="modal-box">
+    <div class="editor-title-row"><h3>Personalizar ficha</h3><span class="editor-plan-badge" id="editor-plan-badge">Treino A</span></div>
+    <div class="ob-sub" style="margin-bottom:12px;">Monte sua ficha do seu jeito. As alterações ficam salvas neste aparelho.</div>
+    <div class="editor-list" id="workout-editor-list"></div>
+    <button class="editor-add-btn" id="btn-editor-add" type="button">＋ Adicionar exercício</button>
+    <div class="editor-form" id="exercise-editor-form" style="display:none;">
+      <div class="editor-form-grid">
+        <div class="field"><label>Nome do exercício</label><input type="text" id="edit-ex-name" maxlength="40" placeholder="Ex: Supino reto"></div>
+        <div class="field"><label>Séries</label><input type="number" id="edit-ex-sets" min="1" max="10" inputmode="numeric" value="3"></div>
+        <div class="field"><label>Repetições</label><input type="text" id="edit-ex-reps" maxlength="12" placeholder="Ex: 8–12"></div>
+        <div class="field"><label>Descanso (segundos)</label><input type="number" id="edit-ex-rest" min="15" max="600" step="15" inputmode="numeric" value="90"></div>
+      </div>
+      <div class="editor-modal-actions"><button id="btn-editor-cancel" type="button" style="background:var(--glass-2);color:var(--text);">Cancelar</button><button id="btn-editor-save" type="button" style="background:linear-gradient(135deg,var(--teal),#14967F);color:#02231C;">Salvar exercício</button></div>
+    </div>
+    <button class="btn-secondary" id="btn-close-workout-editor" type="button" style="margin-top:12px;">Fechar</button>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="workout-detail-modal">
+  <div class="modal-box workout-detail-modal-box">
+    <div class="workout-history-head"><h3 id="workout-detail-title">Treino</h3><span class="tag-soft" id="workout-detail-date">--</span></div>
+    <div id="workout-detail-body" class="workout-detail-body"></div>
+    <div class="detail-actions">
+      <button class="btn-danger" type="button" id="btn-delete-workout-session">Excluir sessão</button>
+      <button class="btn-secondary" type="button" id="btn-close-workout-detail">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TIMER ================= -->
+<div class="modal-overlay" id="timer-modal">
+  <div class="modal-box" style="max-width:300px;">
+    <div style="font-size:15px; font-weight:800; color:var(--text-dim); margin-bottom:6px;" id="timer-activity">Caminhada</div>
+    <div style="font-size:52px; font-weight:900; letter-spacing:-0.02em; margin:6px 0 18px; font-variant-numeric:tabular-nums;" id="timer-clock">10:00</div>
+    <div style="display:flex; gap:10px;">
+      <button style="flex:1; border:none; border-radius:100px; padding:13px; font-weight:800; font-size:13.5px; cursor:pointer; background:var(--glass-2); color:var(--text);" id="timer-pause">Pausar</button>
+      <button style="flex:1; border:none; border-radius:100px; padding:13px; font-weight:800; font-size:13.5px; cursor:pointer; background:rgba(255,255,255,0.08); color:var(--text-dim);" id="timer-stop">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LEVEL UP ================= -->
+<div class="modal-overlay" id="levelup-modal">
+  <div class="modal-box">
+    <div class="m-big" id="lu-emoji">🎉</div>
+    <h3 id="lu-title">Novo nível!</h3>
+    <p id="lu-desc">Você completou 7 dias seguidos.</p>
+    <button class="primary" id="lu-close">Continuar</button>
+  </div>
+</div>
+
+<script src="js/build-info.js"></script>
+<script src="js/migrations.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
