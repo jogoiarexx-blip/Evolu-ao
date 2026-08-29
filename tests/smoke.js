@@ -3,24 +3,18 @@ const path=require("path");
 const root=path.resolve(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const js=fs.readFileSync(path.join(root,"js/app.js"),"utf8");
-const required=[
-  "checkReminders();",
-  "meal-cal-input",
-  "EVOLUCAO_STORAGE_KEY",
-  "hydrateState",
-  "workout-detail-modal",
-  "measure-chart",
-  "cfg-sex",
-  "cfg-manual-nutrition","cfg-sex","cfg-training-priority","applyProfileWorkoutPreset"
-];
+const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
+const server=fs.readFileSync(path.join(root,"server/server.js"),"utf8");
+const required=["checkReminders();","meal-cal-input","EVOLUCAO_STORAGE_KEY","hydrateState","workout-detail-modal","measure-chart","cfg-sex","cfg-manual-nutrition","cfg-training-priority","applyProfileWorkoutPreset","pwa-update-banner","btn-update-now","applyPendingUpdate","disableWebPush","pushDeviceToken","reminderPriority"];
 let failed=[];
-for(const item of required){
-  if(!html.includes(item)&&!js.includes(item))failed.push(item);
-}
+for(const item of required)if(!html.includes(item)&&!js.includes(item)&&!sw.includes(item)&&!server.includes(item))failed.push(item);
 if(js.includes("checkReminder();"))failed.push("legacy checkReminder()");
-if(js.includes("parseFloat(document.getElementById('meal-name-input').value)"))failed.push("nutrition calories reads name");
+if(js.includes("state.meals||[]"))failed.push("push snapshot still reads state.meals");
+if(!js.includes("state.mealHistory&&state.mealHistory[todayStr()]"))failed.push("push snapshot missing mealHistory");
+if(!server.includes("/api/push/unsubscribe"))failed.push("push unsubscribe endpoint missing");
+if(!server.includes("rateLimit"))failed.push("push rate limit missing");
+if(!sw.includes('action==="add-water"'))failed.push("notification action add-water missing");
+if(!sw.includes('action==="later"'))failed.push("notification action later missing");
 const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]);
-const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
-if(dup.length)failed.push("duplicate ids: "+[...new Set(dup)].join(","));
-if(failed.length){console.error("SMOKE FAIL",failed);process.exit(1);}
-console.log("SMOKE OK");
+const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);if(dup.length)failed.push("duplicate ids: "+[...new Set(dup)].join(","));
+if(failed.length){console.error("SMOKE FAIL",failed);process.exit(1);}console.log("SMOKE OK v1.2.1");

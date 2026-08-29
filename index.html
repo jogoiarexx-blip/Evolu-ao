@@ -46,6 +46,17 @@
 
 <canvas id="confetti-canvas"></canvas>
 <div id="toast-container"></div>
+<div class="pwa-update-banner" id="pwa-update-banner" role="status" aria-live="polite" hidden>
+  <div class="pwa-update-banner-copy">
+    <b>⬆️ Nova atualização disponível</b>
+    <span id="pwa-update-banner-text">Uma nova versão do EVOLUÇÃO está pronta para instalar.</span>
+  </div>
+  <div class="pwa-update-banner-actions">
+    <button type="button" class="btn-secondary" id="btn-update-later">Depois</button>
+    <button type="button" class="btn-complete" id="btn-update-now">Atualizar agora</button>
+  </div>
+</div>
+
 
 <div id="app">
 
@@ -597,6 +608,11 @@
         <input type="time" id="cfg-water-reminder-time" aria-label="Horário do lembrete de água">
         <label class="switch"><input type="checkbox" id="cfg-water-reminder-enabled"><span class="slider"></span></label>
       </div>
+      <div class="notification-pref-row"><div class="notification-pref-copy"><b>🏋️ Treino</b><span>Avisa apenas enquanto o treino do dia estiver pendente</span></div><input type="time" id="cfg-workout-reminder-time"><label class="switch"><input type="checkbox" id="cfg-workout-reminder-enabled"><span class="slider"></span></label></div>
+      <div class="notification-pref-row"><div class="notification-pref-copy"><b>🚶 Passos</b><span>Mostra quanto falta para alcançar a meta</span></div><input type="time" id="cfg-steps-reminder-time"><label class="switch"><input type="checkbox" id="cfg-steps-reminder-enabled"><span class="slider"></span></label></div>
+      <div class="notification-pref-row"><div class="notification-pref-copy"><b>😴 Sono</b><span>Lembra do registro de sono no fim do dia</span></div><input type="time" id="cfg-sleep-reminder-time"><label class="switch"><input type="checkbox" id="cfg-sleep-reminder-enabled"><span class="slider"></span></label></div>
+      <div class="field-row"><div class="field"><label>Repetir pendências a cada</label><select id="cfg-smart-reminder-interval"><option value="60">1 hora</option><option value="90">1h30</option><option value="120">2 horas</option><option value="180">3 horas</option></select></div><div class="field"><label>Horário silencioso</label><div style="display:flex;gap:8px"><input type="time" id="cfg-quiet-start"><input type="time" id="cfg-quiet-end"></div></div></div>
+      <div class="toggle-row"><div><div class="t-label">🌙 Não perturbar</div><div class="t-desc">Suspende lembretes durante o horário silencioso</div></div><label class="switch"><input type="checkbox" id="cfg-quiet-enabled"><span class="slider"></span></label></div>
 
       <div class="settings-info-card install-card">
         <div><b>📲 Instalar EVOLUÇÃO</b><span id="pwa-install-status">Verificando disponibilidade…</span></div>
@@ -606,7 +622,7 @@
         <div><b>🔔 Notificações</b><span id="notification-status">Verificando permissão…</span></div>
         <button class="btn-secondary mini-settings-btn" type="button" id="btn-enable-notifications">Permitir</button>
       </div>
-      <div class="notification-limit-note">Lembretes locais funcionam enquanto o app está ativo. Para notificações garantidas com o app totalmente fechado, será necessário Web Push em uma etapa futura.</div>
+      <div class="notification-limit-note">Os lembretes priorizam o que está mais pendente, adiam a cobrança quando você registra progresso e evitam spam. Com Web Push ativo, continuam funcionando com o PWA fechado.</div>
       <div class="settings-info-card">
         <div><b>⬆️ Atualizações</b><span id="pwa-update-status">Modo local · atualização manual</span></div>
         <button class="btn-secondary mini-settings-btn" type="button" id="btn-check-update">Verificar</button>

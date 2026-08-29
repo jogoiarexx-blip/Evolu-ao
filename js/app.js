@@ -5,7 +5,7 @@
      CONFIGURAÇÃO
   ============================================================ */
   var STORAGE_KEY = "constancia_data_v1";
-  var EVOLUCAO_SCHEMA_VERSION=4;
+  var EVOLUCAO_SCHEMA_VERSION=5;
   var EVOLUCAO_STORAGE_KEY="evolucao_data_v1";
   var WORKOUT_SPLITS={ABC:["A","B","C"],AB:["A","B"],ABCD:["A","B","C","D"],FULL:["FULL"],UL:["UPPER","LOWER"],PPL:["PUSH","PULL","LEGS"],CUSTOM:["X1","X2","X3"]};
 
@@ -69,7 +69,11 @@
     seenBreakBanner: null,
     reminderTime: "19:00", reminderEnabled:false, reminderNotifiedDate: null,
     nutritionReminderTime:"13:00", nutritionReminderEnabled:false, nutritionReminderNotifiedDate:null,
-    waterReminderTime:"16:00", waterReminderEnabled:false, waterReminderNotifiedDate:null,
+    waterReminderTime:"08:00", waterReminderEnabled:false, waterReminderNotifiedDate:null,
+    smartReminderIntervalMin:60, quietHoursEnabled:true, quietStart:"22:00", quietEnd:"07:00",
+    workoutReminderEnabled:false, workoutReminderTime:"18:00", stepsReminderEnabled:false, stepsReminderTime:"19:30", sleepReminderEnabled:false, sleepReminderTime:"21:30",
+    reminderLog:{}, reminderLastValues:{},
+    pushEnabled:false, pushLastSync:0,
     weeklyWorkoutTarget:4, weeklyProteinDaysTarget:5, weeklyWeighinsTarget:3,
     smartAlertsEnabled:false, smartAlertTime:"18:30", smartAlertNotifiedDate:null,
     activityLevel: "moderado", proteinTargetG: null, calorieTarget: null, stepsTarget: 8000, sleepTargetH: 8,
@@ -129,7 +133,7 @@
       return JSON.parse(JSON.stringify(defaultState));
     }
   }
-  function save(){ try{ var p=JSON.stringify(state); localStorage.setItem(STORAGE_KEY,p); localStorage.setItem(EVOLUCAO_STORAGE_KEY,p); }catch(e){} }
+  function save(){ try{ var p=JSON.stringify(state); localStorage.setItem(STORAGE_KEY,p); localStorage.setItem(EVOLUCAO_STORAGE_KEY,p); schedulePushSync(); }catch(e){} }
 
   /* ============================================================
      LÓGICA DE NEGÓCIO
@@ -1468,6 +1472,12 @@ function renderWorkout(){
     document.getElementById("cfg-nutrition-reminder-enabled").checked = !!state.nutritionReminderEnabled;
     document.getElementById("cfg-water-reminder-time").value = state.waterReminderTime || "16:00";
     document.getElementById("cfg-water-reminder-enabled").checked = !!state.waterReminderEnabled;
+    document.getElementById("cfg-smart-reminder-interval").value=state.smartReminderIntervalMin||60;
+    document.getElementById("cfg-quiet-enabled").checked=state.quietHoursEnabled!==false;
+    document.getElementById("cfg-quiet-start").value=state.quietStart||"22:00"; document.getElementById("cfg-quiet-end").value=state.quietEnd||"07:00";
+    document.getElementById("cfg-workout-reminder-enabled").checked=!!state.workoutReminderEnabled; document.getElementById("cfg-workout-reminder-time").value=state.workoutReminderTime||"18:00";
+    document.getElementById("cfg-steps-reminder-enabled").checked=!!state.stepsReminderEnabled; document.getElementById("cfg-steps-reminder-time").value=state.stepsReminderTime||"19:30";
+    document.getElementById("cfg-sleep-reminder-enabled").checked=!!state.sleepReminderEnabled; document.getElementById("cfg-sleep-reminder-time").value=state.sleepReminderTime||"21:30";
     document.getElementById("cfg-weekly-workouts").value=state.weeklyWorkoutTarget||4;
     document.getElementById("cfg-weekly-protein-days").value=state.weeklyProteinDaysTarget||5;
     document.getElementById("cfg-weekly-weighins").value=state.weeklyWeighinsTarget||3;
@@ -1502,6 +1512,8 @@ function renderWorkout(){
     var nutritionRemEnabled=document.getElementById("cfg-nutrition-reminder-enabled").checked;
     var waterRemTime=document.getElementById("cfg-water-reminder-time").value||"16:00";
     var waterRemEnabled=document.getElementById("cfg-water-reminder-enabled").checked;
+    var smartReminderIntervalMin=parseInt(document.getElementById("cfg-smart-reminder-interval").value,10)||60,quietHoursEnabled=document.getElementById("cfg-quiet-enabled").checked,quietStart=document.getElementById("cfg-quiet-start").value||"22:00",quietEnd=document.getElementById("cfg-quiet-end").value||"07:00";
+    var workoutReminderEnabled=document.getElementById("cfg-workout-reminder-enabled").checked,workoutReminderTime=document.getElementById("cfg-workout-reminder-time").value||"18:00",stepsReminderEnabled=document.getElementById("cfg-steps-reminder-enabled").checked,stepsReminderTime=document.getElementById("cfg-steps-reminder-time").value||"19:30",sleepReminderEnabled=document.getElementById("cfg-sleep-reminder-enabled").checked,sleepReminderTime=document.getElementById("cfg-sleep-reminder-time").value||"21:30";
     var weeklyWorkoutTarget=parseInt(document.getElementById("cfg-weekly-workouts").value,10),weeklyProteinDaysTarget=parseInt(document.getElementById("cfg-weekly-protein-days").value,10),weeklyWeighinsTarget=parseInt(document.getElementById("cfg-weekly-weighins").value,10),smartAlertTime=document.getElementById("cfg-smart-alert-time").value||"18:30",smartAlertsEnabled=document.getElementById("cfg-smart-alert-enabled").checked;
     var manualNutritionTargets=document.getElementById("cfg-manual-nutrition").checked;
     var manualCalories=parseFloat(document.getElementById("cfg-manual-calories").value)||null;
@@ -1541,6 +1553,8 @@ function renderWorkout(){
     state.reminderEnabled = remEnabled;
     state.nutritionReminderTime=nutritionRemTime; state.nutritionReminderEnabled=nutritionRemEnabled;
     state.waterReminderTime=waterRemTime; state.waterReminderEnabled=waterRemEnabled;
+    state.smartReminderIntervalMin=smartReminderIntervalMin; state.quietHoursEnabled=quietHoursEnabled; state.quietStart=quietStart; state.quietEnd=quietEnd;
+    state.workoutReminderEnabled=workoutReminderEnabled; state.workoutReminderTime=workoutReminderTime; state.stepsReminderEnabled=stepsReminderEnabled; state.stepsReminderTime=stepsReminderTime; state.sleepReminderEnabled=sleepReminderEnabled; state.sleepReminderTime=sleepReminderTime;
     state.weeklyWorkoutTarget=weeklyWorkoutTarget;state.weeklyProteinDaysTarget=weeklyProteinDaysTarget;state.weeklyWeighinsTarget=weeklyWeighinsTarget;state.smartAlertTime=smartAlertTime;state.smartAlertsEnabled=smartAlertsEnabled;
     state.manualNutritionTargets=manualNutritionTargets;state.manualCalories=manualCalories;state.manualProtein=manualProtein;state.manualCarbs=manualCarbs;state.manualFat=manualFat;
     state.goalType = goalType;
@@ -1652,38 +1666,103 @@ function renderWorkout(){
     timerModal.classList.remove("show");
   });
 
-  /* ---------- lembretes locais ---------- */
-  function sendLocalReminder(title,msg,tag){
+  /* ---------- lembretes inteligentes locais ---------- */
+  function minutesNow(d){return d.getHours()*60+d.getMinutes();}
+  function hmMinutes(v){var a=(v||"00:00").split(":");return (parseInt(a[0],10)||0)*60+(parseInt(a[1],10)||0);}
+  function inQuietHours(now){if(state.quietHoursEnabled===false)return false;var n=minutesNow(now),a=hmMinutes(state.quietStart||"22:00"),b=hmMinutes(state.quietEnd||"07:00");return a===b?false:(a<b?n>=a&&n<b:n>=a||n<b);}
+  function reminderKey(kind){return todayStr()+":"+kind;}
+  function canRepeatReminder(kind,value){
+    state.reminderLog=state.reminderLog||{}; state.reminderLastValues=state.reminderLastValues||{};
+    var key=reminderKey(kind),last=Number(state.reminderLog[key]||0),gap=(state.smartReminderIntervalMin||60)*60000,hasValue=Object.prototype.hasOwnProperty.call(state.reminderLastValues,kind),changed=hasValue&&state.reminderLastValues[kind]!==value;
+    // Progresso real adia a próxima cobrança em vez de disparar outra imediatamente.
+    if(changed){state.reminderLastValues[kind]=value;state.reminderLog[key]=Date.now();save();return false;}
+    return !last||(Date.now()-last>=gap);
+  }
+  function markReminder(kind,value){state.reminderLog=state.reminderLog||{};state.reminderLastValues=state.reminderLastValues||{};state.reminderLog[reminderKey(kind)]=Date.now();state.reminderLastValues[kind]=value;var prefix=todayStr()+":";Object.keys(state.reminderLog).forEach(function(k){if(k.indexOf(prefix)!==0)delete state.reminderLog[k];});save();}
+  function sendLocalReminder(title,msg,tag,url,actions){
     if("Notification" in window && Notification.permission==="granted"){
-      try{
-        if(navigator.serviceWorker&&navigator.serviceWorker.ready){navigator.serviceWorker.ready.then(function(reg){reg.showNotification(title,{body:msg,icon:"icons/icon-192.png",badge:"icons/icon-192.png",tag:tag,renotify:false});}).catch(function(){new Notification(title,{body:msg});});}
-        else new Notification(title,{body:msg});
-      }catch(e){}
+      try{if(navigator.serviceWorker&&navigator.serviceWorker.ready){navigator.serviceWorker.ready.then(function(reg){reg.showNotification(title,{body:msg,icon:"icons/icon-192.png",badge:"icons/icon-192.png",tag:tag,renotify:false,data:{url:url||"./index.html"},actions:actions||[]});}).catch(function(){new Notification(title,{body:msg});});}else new Notification(title,{body:msg});}catch(e){}
     }
     showToast("⏰ "+msg); fireVibration([80,40,80]);
   }
-  function checkReminders(){
-    var t=todayStr(),now=new Date(),nowHM=pad(now.getHours())+":"+pad(now.getMinutes());
-    if(state.reminderEnabled&&!isTodayCompleted()&&state.reminderNotifiedDate!==t&&nowHM>=state.reminderTime){state.reminderNotifiedDate=t;save();sendLocalReminder("EVOLUÇÃO","Sua missão de hoje ainda não foi concluída.","evolucao-missao");}
-    var meals=(state.mealHistory&&state.mealHistory[t])||[];
-    if(state.nutritionReminderEnabled&&meals.length===0&&state.nutritionReminderNotifiedDate!==t&&nowHM>=(state.nutritionReminderTime||"13:00")){state.nutritionReminderNotifiedDate=t;save();sendLocalReminder("EVOLUÇÃO · Nutrição","Você ainda não registrou uma refeição hoje.","evolucao-nutricao");}
-    var cups=(state.todayChecks&&state.todayChecks.aguaCups)||0,goal=waterCupsGoal();
-    if(state.waterReminderEnabled&&cups<goal&&state.waterReminderNotifiedDate!==t&&nowHM>=(state.waterReminderTime||"16:00")){state.waterReminderNotifiedDate=t;save();sendLocalReminder("EVOLUÇÃO · Água","Sua água está em "+(cups*WATER_CUP_ML)+" / "+(goal*WATER_CUP_ML)+" ml.","evolucao-agua");}
-    if(state.smartAlertsEnabled&&state.smartAlertNotifiedDate!==t&&nowHM>=(state.smartAlertTime||"18:30")){var wa=smartWeeklyAlerts(currentWeekSnapshot()),warn=wa.filter(function(x){return x.type==="warn";})[0];if(warn){state.smartAlertNotifiedDate=t;save();sendLocalReminder("EVOLUÇÃO · Semana",warn.text,"evolucao-semana");}}
+  function smartNotify(kind,title,msg,value,url,actions){if(!canRepeatReminder(kind,value))return false;markReminder(kind,value);sendLocalReminder(title,msg,"evolucao-"+kind,url,actions);return true;}
+  function reminderPriority(kind,progressRatio,minutesLate){
+    var base={treino:95,passos:80,nutricao:76,sono:72,missao:68,agua:60,semana:45}[kind]||40;
+    if(typeof progressRatio==="number")base+=Math.round((1-Math.max(0,Math.min(1,progressRatio)))*25);
+    base+=Math.min(20,Math.floor(Math.max(0,minutesLate)/60)*4); return base;
   }
-  setInterval(checkReminders,30000);
+  function checkReminders(){
+    var t=todayStr(),now=new Date(),nowHM=pad(now.getHours())+":"+pad(now.getMinutes()); if(inQuietHours(now))return;
+    var candidates=[],nowMin=minutesNow(now),meals=(state.mealHistory&&state.mealHistory[t])||[];
+    function add(kind,title,msg,value,url,time,ratio,actions){if(nowHM<time)return;candidates.push({kind:kind,title:title,msg:msg,value:value,url:url,time:time,actions:actions||[],score:reminderPriority(kind,ratio,nowMin-hmMinutes(time))});}
+    if(state.reminderEnabled&&!isTodayCompleted())add("missao","EVOLUÇÃO","Sua missão de hoje ainda não foi concluída.","pending","./index.html?action=today",state.reminderTime||"19:00",0);
+    if(state.nutritionReminderEnabled&&meals.length===0)add("nutricao","EVOLUÇÃO · Nutrição","Você ainda não registrou uma refeição hoje.",0,"./index.html?action=nutrition",state.nutritionReminderTime||"13:00",0,[{action:"nutrition",title:"Registrar refeição"},{action:"later",title:"Lembrar depois"}]);
+    var cups=(state.todayChecks&&state.todayChecks.aguaCups)||0,goal=waterCupsGoal(),ml=cups*WATER_CUP_ML,target=goal*WATER_CUP_ML;
+    if(state.waterReminderEnabled&&cups<goal)add("agua","EVOLUÇÃO · Água",ml?"Você ainda está em "+ml+" / "+target+" ml. Que tal mais um copo?":"Sua meta é "+target+" ml. Comece com um copo de água.",cups,"./index.html?action=water",state.waterReminderTime||"08:00",goal?cups/goal:0,[{action:"add-water",title:"+250 ml"},{action:"later",title:"Lembrar depois"}]);
+    if(state.workoutReminderEnabled&&!state.todayHabits.treino&&!isAnyWorkoutCompleteToday())add("treino","EVOLUÇÃO · Treino","Seu treino de hoje ainda está esperando por você.","pending","./index.html?action=workout",state.workoutReminderTime||"18:00",0,[{action:"workout",title:"Começar treino"},{action:"later",title:"Lembrar depois"}]);
+    var steps=(state.todayHabits&&state.todayHabits.stepsCount)||0,stepsGoal=state.stepsTarget||8000;
+    if(state.stepsReminderEnabled&&steps<stepsGoal)add("passos","EVOLUÇÃO · Passos","Você está em "+steps.toLocaleString("pt-BR")+" de "+stepsGoal.toLocaleString("pt-BR")+" passos. Faltam "+(stepsGoal-steps).toLocaleString("pt-BR")+".",steps,"./index.html?action=today",state.stepsReminderTime||"19:30",stepsGoal?steps/stepsGoal:0);
+    var sleep=(state.todayHabits&&state.todayHabits.sleepHours)||0;
+    if(state.sleepReminderEnabled&&sleep<=0)add("sono","EVOLUÇÃO · Sono","Seu registro de sono ainda está pendente. Preparar o descanso também faz parte da evolução.",0,"./index.html?action=today",state.sleepReminderTime||"21:30",0);
+    if(state.smartAlertsEnabled&&nowHM>=(state.smartAlertTime||"18:30")){var wa=smartWeeklyAlerts(currentWeekSnapshot()),warn=wa.filter(function(x){return x.type==="warn";})[0];if(warn)add("semana","EVOLUÇÃO · Semana",warn.text,warn.text,"./index.html?action=stats",state.smartAlertTime||"18:30",0);}
+    candidates.sort(function(a,b){return b.score-a.score;});
+    for(var i=0;i<candidates.length;i++){var c=candidates[i];if(smartNotify(c.kind,c.title,c.msg,c.value,c.url,c.actions))break;}
+  }
+  setInterval(checkReminders,60000);
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){checkReminders();syncPushState();}});
 
   /* ---------- PWA, instalação, notificações e atualização ---------- */
-  var swRegistration=null,pwaUpdatePending=false,deferredInstallPrompt=null;
+  var swRegistration=null,pwaUpdatePending=false,pwaWaitingWorker=null,deferredInstallPrompt=null;
   function isHostedPWAContext(){return location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1";}
   function isStandaloneApp(){return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
   function isiOS(){return /iphone|ipad|ipod/i.test(navigator.userAgent||"");}
+
+  /* ============================================================
+     WEB PUSH — notificações mesmo com o PWA fechado
+     O backend opcional vive em /server. Sem backend, o app mantém
+     automaticamente os lembretes locais já existentes.
+  ============================================================ */
+  var pushSyncTimer=null;
+  function pushApi(path,options){return fetch(path,Object.assign({headers:{"Content-Type":"application/json"}},options||{}));}
+  function urlBase64ToUint8Array(base64String){var padding="=".repeat((4-base64String.length%4)%4),base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/"),raw=atob(base64),out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;}
+  function pushSnapshot(){
+    ensureV1Fresh();
+    var cups=(state.todayChecks&&state.todayChecks.aguaCups)||0;
+    return {date:todayStr(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Sao_Paulo",settings:{
+      intervalMin:state.smartReminderIntervalMin||60,quietEnabled:state.quietHoursEnabled!==false,quietStart:state.quietStart||"22:00",quietEnd:state.quietEnd||"07:00",
+      waterEnabled:!!state.waterReminderEnabled,waterTime:state.waterReminderTime||"08:00",workoutEnabled:!!state.workoutReminderEnabled,workoutTime:state.workoutReminderTime||"18:00",
+      nutritionEnabled:!!state.nutritionReminderEnabled,nutritionTime:state.nutritionReminderTime||"13:00",stepsEnabled:!!state.stepsReminderEnabled,stepsTime:state.stepsReminderTime||"19:30",
+      sleepEnabled:!!state.sleepReminderEnabled,sleepTime:state.sleepReminderTime||"21:30",missionEnabled:!!state.reminderEnabled,missionTime:state.reminderTime||"19:00"
+    },progress:{waterMl:cups*WATER_CUP_ML,waterTargetMl:waterCupsGoal()*WATER_CUP_ML,workoutDone:!!(state.todayHabits&&state.todayHabits.treino)||isAnyWorkoutCompleteToday(),meals:((state.mealHistory&&state.mealHistory[todayStr()])||[]).length,steps:Number((state.todayHabits&&state.todayHabits.stepsCount)||0),stepsTarget:Number(state.stepsTarget||8000),sleep:Number((state.todayHabits&&state.todayHabits.sleepHours)||0),missionDone:isTodayCompleted()}};
+  }
+  function pushDeviceToken(){
+    if(!state.pushDeviceToken){try{var a=new Uint32Array(4);crypto.getRandomValues(a);state.pushDeviceToken=Array.from(a).map(function(n){return n.toString(16).padStart(8,"0");}).join("");}catch(e){state.pushDeviceToken=Date.now().toString(36)+Math.random().toString(36).slice(2);}save();}
+    return state.pushDeviceToken;
+  }
+  function syncPushState(){if(!state.pushEnabled||!("serviceWorker" in navigator))return Promise.resolve(false);return navigator.serviceWorker.ready.then(function(reg){return reg.pushManager.getSubscription();}).then(function(sub){if(!sub){state.pushEnabled=false;save();renderNotificationStatus();return false;}return pushApi("./api/push/sync",{method:"POST",body:JSON.stringify({subscription:sub.toJSON(),snapshot:pushSnapshot(),deviceToken:pushDeviceToken()})}).then(function(r){if(!r.ok)throw new Error("sync");state.pushLastSync=Date.now();save();return true;});}).catch(function(){return false;});}
+  function schedulePushSync(){if(!state||!state.pushEnabled)return;clearTimeout(pushSyncTimer);pushSyncTimer=setTimeout(syncPushState,1200);}
+  function enableWebPush(){
+    if(!("serviceWorker" in navigator)||!("PushManager" in window)){return Promise.resolve(false);}
+    return pushApi("./api/push/config").then(function(r){if(!r.ok)throw new Error("backend");return r.json();}).then(function(cfg){if(!cfg.publicKey)throw new Error("key");return navigator.serviceWorker.ready.then(function(reg){return reg.pushManager.getSubscription().then(function(sub){return sub||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(cfg.publicKey)});});});}).then(function(sub){state.pushEnabled=true;save();return pushApi("./api/push/sync",{method:"POST",body:JSON.stringify({subscription:sub.toJSON(),snapshot:pushSnapshot(),deviceToken:pushDeviceToken()})});}).then(function(r){if(!r.ok)throw new Error("sync");renderNotificationStatus();showToast("🔔 Notificações em segundo plano ativadas");return true;}).catch(function(){state.pushEnabled=false;save();renderNotificationStatus();showToast("Notificações locais ativadas. Web Push requer o servidor do app.");return false;});
+  }
+  function disableWebPush(){
+    if(!("serviceWorker" in navigator)){state.pushEnabled=false;save();renderNotificationStatus();return Promise.resolve(true);}
+    return navigator.serviceWorker.ready.then(function(reg){return reg.pushManager.getSubscription();}).then(function(sub){if(!sub)return true;var payload={endpoint:sub.endpoint,deviceToken:pushDeviceToken()};return pushApi("./api/push/unsubscribe",{method:"POST",body:JSON.stringify(payload)}).catch(function(){}).then(function(){return sub.unsubscribe();});}).then(function(){state.pushEnabled=false;save();renderNotificationStatus();showToast("🔕 Notificações em segundo plano desativadas");return true;}).catch(function(){showToast("Não foi possível desativar o Push neste aparelho");return false;});
+  }
+
   function renderNotificationStatus(){
     var el=document.getElementById("notification-status"),btn=document.getElementById("btn-enable-notifications");if(!el||!btn)return;
     if(!("Notification" in window)){el.textContent="Não disponível neste navegador";btn.disabled=true;return;}
-    var p=Notification.permission;el.textContent=p==="granted"?"Permitidas":p==="denied"?"Bloqueadas no navegador":"Ainda não permitidas";btn.textContent=p==="granted"?"Ativadas":"Permitir";btn.disabled=p==="granted";
+    var p=Notification.permission;btn.disabled=false;
+    if(p==="denied"){el.textContent="Bloqueadas no navegador";btn.textContent="Bloqueadas";btn.disabled=true;return;}
+    if(p!=="granted"){el.textContent="Ainda não permitidas";btn.textContent="Permitir";return;}
+    el.textContent=state.pushEnabled?"Permitidas · Web Push ativo":"Permitidas · lembretes locais";btn.textContent=state.pushEnabled?"Desativar Push":"Ativar Push";
   }
-  function requestNotifications(){if(!("Notification" in window)){showToast("Notificações não disponíveis neste navegador");return;}Notification.requestPermission().then(function(p){renderNotificationStatus();showToast(p==="granted"?"🔔 Notificações ativadas":"Permissão de notificações não concedida");});}
+  function requestNotifications(){
+    if(!("Notification" in window)){showToast("Notificações não disponíveis neste navegador");return;}
+    if(Notification.permission==="granted"){if(state.pushEnabled)return disableWebPush();return enableWebPush();}
+    Notification.requestPermission().then(function(p){renderNotificationStatus();if(p==="granted")return enableWebPush();showToast("Permissão de notificações não concedida");});
+  }
   function renderInstallStatus(){
     var el=document.getElementById("pwa-install-status"),btn=document.getElementById("btn-install-app");if(!el||!btn)return;
     if(isStandaloneApp()){el.textContent="Instalado neste aparelho";btn.textContent="Instalado";btn.disabled=true;return;}
@@ -1702,22 +1781,54 @@ function renderWorkout(){
   window.addEventListener("beforeinstallprompt",function(ev){ev.preventDefault();deferredInstallPrompt=ev;renderInstallStatus();});
   window.addEventListener("appinstalled",function(){deferredInstallPrompt=null;renderInstallStatus();showToast("✓ EVOLUÇÃO instalado");});
   function renderUpdateStatus(text){var e=document.getElementById("pwa-update-status");if(e)e.textContent=text;}
+  function showUpdateBanner(worker){
+    pwaWaitingWorker=worker||pwaWaitingWorker;
+    var box=document.getElementById("pwa-update-banner");
+    if(box)box.hidden=false;
+    renderUpdateStatus("Nova versão disponível");
+  }
+  function hideUpdateBanner(){var box=document.getElementById("pwa-update-banner");if(box)box.hidden=true;}
+  function applyPendingUpdate(){
+    if(!pwaWaitingWorker){showToast("Nenhuma atualização pronta no momento");return;}
+    pwaUpdatePending=true;renderUpdateStatus("Atualizando agora…");
+    var b=document.getElementById("btn-update-now");if(b){b.disabled=true;b.textContent="Atualizando…";}
+    try{pwaWaitingWorker.postMessage({type:"SKIP_WAITING"});}catch(e){pwaUpdatePending=false;showToast("Não foi possível aplicar a atualização");}
+  }
   function registerPWA(){
     renderNotificationStatus();renderInstallStatus();
     if(!("serviceWorker" in navigator)||!isHostedPWAContext()){renderUpdateStatus("Modo local · atualização automática requer HTTPS");return;}
     navigator.serviceWorker.register("./service-worker.js",{updateViaCache:"none"}).then(function(reg){
-      swRegistration=reg;renderUpdateStatus("Atualizações automáticas ativas");reg.update().catch(function(){});
-      reg.addEventListener("updatefound",function(){var nw=reg.installing;if(!nw)return;renderUpdateStatus("Baixando nova versão…");nw.addEventListener("statechange",function(){if(nw.state==="installed"&&navigator.serviceWorker.controller){pwaUpdatePending=true;renderUpdateStatus("Nova versão pronta · atualizando…");try{nw.postMessage({type:"SKIP_WAITING"});}catch(e){}}});});
+      swRegistration=reg;renderUpdateStatus("Atualizações automáticas ativas · v"+(window.EVOLUCAO_BUILD?window.EVOLUCAO_BUILD.version:"atual"));
+      if(reg.waiting&&navigator.serviceWorker.controller)showUpdateBanner(reg.waiting);
+      reg.update().catch(function(){});
+      reg.addEventListener("updatefound",function(){
+        var nw=reg.installing;if(!nw)return;renderUpdateStatus("Baixando nova versão…");
+        nw.addEventListener("statechange",function(){
+          if(nw.state==="installed"&&navigator.serviceWorker.controller)showUpdateBanner(nw);
+          else if(nw.state==="activated"&&!navigator.serviceWorker.controller)renderUpdateStatus("App pronto para uso");
+        });
+      });
       setInterval(function(){reg.update().catch(function(){});},30*60*1000);
       document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")reg.update().catch(function(){});});
     }).catch(function(){renderUpdateStatus("Não foi possível ativar atualização automática");});
-    navigator.serviceWorker.addEventListener("controllerchange",function(){if(pwaUpdatePending){pwaUpdatePending=false;renderUpdateStatus("Atualizado · reiniciando…");setTimeout(function(){location.reload();},250);}});
+    navigator.serviceWorker.addEventListener("controllerchange",function(){
+      if(pwaUpdatePending){pwaUpdatePending=false;hideUpdateBanner();renderUpdateStatus("Atualizado · reiniciando…");setTimeout(function(){location.reload();},300);}
+    });
   }
-  function checkForAppUpdate(){if(swRegistration){renderUpdateStatus("Verificando…");swRegistration.update().then(function(){setTimeout(function(){if(!pwaUpdatePending)renderUpdateStatus("Nenhuma atualização pendente");},900);}).catch(function(){renderUpdateStatus("Falha ao verificar atualização");});}else if(!isHostedPWAContext())showToast("Atualização automática exige o app publicado em HTTPS");else showToast("Serviço de atualização ainda não está pronto");}
+  function checkForAppUpdate(){
+    if(swRegistration){
+      renderUpdateStatus("Verificando…");
+      swRegistration.update().then(function(){setTimeout(function(){if(swRegistration.waiting)showUpdateBanner(swRegistration.waiting);else if(!pwaWaitingWorker)renderUpdateStatus("Você já está na versão mais recente");},1100);}).catch(function(){renderUpdateStatus("Falha ao verificar atualização");});
+    }else if(!isHostedPWAContext())showToast("Atualização automática exige o app publicado em HTTPS");else showToast("Serviço de atualização ainda não está pronto");
+  }
   var notifBtn=document.getElementById("btn-enable-notifications");if(notifBtn)notifBtn.addEventListener("click",requestNotifications);
   var updBtn=document.getElementById("btn-check-update");if(updBtn)updBtn.addEventListener("click",checkForAppUpdate);
+  var updateNowBtn=document.getElementById("btn-update-now");if(updateNowBtn)updateNowBtn.addEventListener("click",applyPendingUpdate);
+  var updateLaterBtn=document.getElementById("btn-update-later");if(updateLaterBtn)updateLaterBtn.addEventListener("click",function(){hideUpdateBanner();renderUpdateStatus("Atualização disponível · toque em Verificar para instalar");});
   var installBtn=document.getElementById("btn-install-app");if(installBtn)installBtn.addEventListener("click",installApp);
   registerPWA();
+  function openActionFromUrl(){var params=new URLSearchParams(location.search),a=params.get("action"),quick=parseInt(params.get("quick"),10)||0,map={workout:"treino",nutrition:"nutricao",stats:"stats",water:"inicio",today:"inicio"},v=map[a];if(!v)return;if(a==="water"&&quick>0){var cups=Math.max(1,Math.round(quick/WATER_CUP_ML));state.todayChecks.aguaCups=Math.min(waterCupsGoal(),(state.todayChecks.aguaCups||0)+cups);save();schedulePushSync();showToast("💧 +"+(cups*WATER_CUP_ML)+" ml registrados");}views.forEach(function(name){var el=document.getElementById("view-"+name);if(el)el.classList.toggle("active",name===v);});document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-view")===v);});if(v==="treino")renderWorkout();if(v==="nutricao")renderV1Dashboard();if(v==="stats")renderStats();if(history.replaceState)history.replaceState({},document.title,location.pathname+location.hash);}
+  openActionFromUrl();
 
   /* ---------- confete ---------- */
   var confettiCanvas = document.getElementById("confetti-canvas");
@@ -1926,6 +2037,7 @@ function renderWorkout(){
     renderMeasures();
     renderWeekly();
     checkReminders();
+    schedulePushSync();
     setTimeout(function(){
       hideSplash();
       if(!state.profileComplete){

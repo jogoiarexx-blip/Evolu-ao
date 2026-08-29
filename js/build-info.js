@@ -1,1 +1,1 @@
-window.EVOLUCAO_BUILD={version:"1.0.0-fechamento.2",builtAt:"2026-08-23"};
+window.EVOLUCAO_BUILD={version:"1.2.1-smart-notifications",builtAt:"2026-08-29"};
