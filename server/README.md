@@ -12,6 +12,10 @@ O PWA continua funcionando offline sem o servidor. Com o servidor configurado, o
 Observação: `push-data.json` é armazenamento simples para uma instalação pequena. Em produção multiusuário, troque por SQLite/Postgres.
 
 
+## v1.2.2 — alimentos inteligentes e hábitos salváveis
+
+O aplicativo agora inclui busca de alimentos com preenchimento automático de porções e macros. Passos e sono possuem salvamento explícito, confirmação visual e suporte a vírgula nas horas de sono.
+
 ## v1.2.1 — estabilidade do Push
 - O cliente envia um token aleatório por aparelho para proteger sincronização/remoção da própria assinatura.
 - Endpoints de escrita têm rate limit básico.
