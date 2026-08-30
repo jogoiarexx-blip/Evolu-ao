@@ -31,6 +31,40 @@
     "Uma missão de cada vez. Um dia de cada vez."
   ];
 
+  /* Valores médios por porção. Marcas e preparos podem variar. */
+  var FOOD_CATALOG = [
+    {name:"Maçã",portion:"1 unidade média (130 g)",calories:72,protein:0.3,carbs:19,fat:0.2,keys:"maca fruta"},
+    {name:"Banana",portion:"1 unidade média (90 g)",calories:80,protein:1.1,carbs:21,fat:0.2,keys:"banana fruta"},
+    {name:"Mamão",portion:"1/2 unidade pequena (150 g)",calories:60,protein:0.8,carbs:15,fat:0.2,keys:"mamao fruta"},
+    {name:"Laranja",portion:"1 unidade média (130 g)",calories:62,protein:1.2,carbs:15.4,fat:0.2,keys:"laranja fruta"},
+    {name:"Ovo cozido",portion:"1 unidade (50 g)",calories:78,protein:6.3,carbs:0.6,fat:5.3,keys:"ovo cozido"},
+    {name:"Ovo frito",portion:"1 unidade (50 g)",calories:105,protein:6.4,carbs:0.4,fat:8.3,keys:"ovo frito"},
+    {name:"Ovo mexido",portion:"1 unidade preparada",calories:95,protein:6.5,carbs:0.6,fat:7.3,keys:"ovo mexido"},
+    {name:"Café sem açúcar",portion:"1 xícara (100 ml)",calories:2,protein:0.1,carbs:0,fat:0,keys:"cafe preto sem acucar bebida"},
+    {name:"Café com açúcar",portion:"1 xícara + 10 g de açúcar",calories:42,protein:0.1,carbs:10,fat:0,keys:"cafe preto com acucar bebida"},
+    {name:"Café com leite sem açúcar",portion:"1 xícara (150 ml)",calories:61,protein:3.2,carbs:4.8,fat:3.3,keys:"cafe leite sem acucar bebida"},
+    {name:"Leite integral",portion:"1 copo (200 ml)",calories:122,protein:6.4,carbs:9.4,fat:6.6,keys:"leite integral bebida"},
+    {name:"Leite desnatado",portion:"1 copo (200 ml)",calories:70,protein:6.8,carbs:10,fat:0.2,keys:"leite desnatado bebida"},
+    {name:"Refrigerante comum",portion:"1 copo (200 ml)",calories:84,protein:0,carbs:21,fat:0,keys:"refrigerante normal cola guarana bebida"},
+    {name:"Refrigerante zero",portion:"1 copo (200 ml)",calories:0,protein:0,carbs:0,fat:0,keys:"refrigerante diet zero cola guarana bebida"},
+    {name:"Arroz branco cozido",portion:"4 colheres de sopa (100 g)",calories:128,protein:2.5,carbs:28.1,fat:0.2,keys:"arroz branco cozido"},
+    {name:"Arroz integral cozido",portion:"4 colheres de sopa (100 g)",calories:124,protein:2.6,carbs:25.8,fat:1,keys:"arroz integral cozido"},
+    {name:"Feijão carioca cozido",portion:"1 concha média (100 g)",calories:76,protein:4.8,carbs:13.6,fat:0.5,keys:"feijao carioca cozido"},
+    {name:"Feijão preto cozido",portion:"1 concha média (100 g)",calories:77,protein:4.5,carbs:14,fat:0.5,keys:"feijao preto cozido"},
+    {name:"Macarrão cozido",portion:"1 pegador (100 g)",calories:157,protein:5.8,carbs:30.9,fat:0.9,keys:"macarrao massa cozido"},
+    {name:"Batata inglesa cozida",portion:"1 unidade média (100 g)",calories:87,protein:1.9,carbs:20.1,fat:0.1,keys:"batata inglesa cozida"},
+    {name:"Pão francês",portion:"1 unidade (50 g)",calories:140,protein:4.5,carbs:28.5,fat:1.5,keys:"pao frances cafe manha"},
+    {name:"Peito de frango grelhado",portion:"1 filé (100 g)",calories:165,protein:31,carbs:0,fat:3.6,keys:"frango peito grelhado carne"},
+    {name:"Carne bovina grelhada",portion:"1 bife médio (100 g)",calories:219,protein:30,carbs:0,fat:10.5,keys:"carne boi bovina bife grelhado vaca"},
+    {name:"Carne moída bovina",portion:"1 porção (100 g)",calories:212,protein:26,carbs:0,fat:11.8,keys:"carne moida boi bovina vaca"},
+    {name:"Lombo suíno assado",portion:"1 porção (100 g)",calories:210,protein:29,carbs:0,fat:9.5,keys:"carne porco suina lombo assado"},
+    {name:"Bisteca suína grelhada",portion:"1 unidade pequena (100 g)",calories:247,protein:27,carbs:0,fat:15,keys:"carne porco suina bisteca grelhada"},
+    {name:"Peixe grelhado",portion:"1 filé (100 g)",calories:128,protein:26,carbs:0,fat:2.7,keys:"peixe tilapia grelhado carne"},
+    {name:"Queijo muçarela",portion:"1 fatia (20 g)",calories:64,protein:4.5,carbs:0.6,fat:4.9,keys:"queijo mussarela mucarela"},
+    {name:"Aveia em flocos",portion:"2 colheres de sopa (30 g)",calories:118,protein:4.2,carbs:20,fat:2.4,keys:"aveia cereal"},
+    {name:"Iogurte natural integral",portion:"1 pote (170 g)",calories:104,protein:6,carbs:8,fat:5.5,keys:"iogurte natural integral leite"}
+  ];
+
   var dowNames = ["dom","seg","ter","qua","qui","sex","sáb"];
   var monthNames = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 
@@ -710,7 +744,56 @@ function renderWorkout(){
     state.customWorkouts[plan]=JSON.parse(JSON.stringify(DEFAULT_WORKOUTS[plan]||[])); WORKOUTS=state.customWorkouts; clearTodayPlanSeries(plan); save(); renderWorkout(); renderV1Dashboard(); showToast('Treino '+plan+' restaurado');
   }
 
-  var mealEditIndex=null, selectedNutritionDate=todayStr();
+  var mealEditIndex=null, selectedNutritionDate=todayStr(), selectedCatalogFood=null;
+  function normalizeFoodText(value){
+    var text=String(value||"").toLowerCase();
+    if(text.normalize)text=text.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    return text.trim();
+  }
+  function foodMatches(food,query){
+    if(!query)return true;
+    var hay=normalizeFoodText(food.name+" "+food.portion+" "+(food.keys||""));
+    return query.split(/\s+/).every(function(word){return hay.indexOf(word)>=0;});
+  }
+  function foodQuantity(){
+    var input=document.getElementById("food-quantity-input");
+    var value=parseFloat(String(input&&input.value||"1").replace(",","."));
+    return isNaN(value)?1:Math.max(.25,Math.min(20,value));
+  }
+  function applySelectedFood(){
+    if(!selectedCatalogFood)return;
+    var quantity=foodQuantity(),round1=function(value){return Math.round(value*10)/10;};
+    document.getElementById("meal-name-input").value=selectedCatalogFood.name;
+    document.getElementById("meal-cal-input").value=Math.round(selectedCatalogFood.calories*quantity);
+    document.getElementById("meal-pro-input").value=round1(selectedCatalogFood.protein*quantity);
+    document.getElementById("meal-carb-input").value=round1(selectedCatalogFood.carbs*quantity);
+    document.getElementById("meal-fat-input").value=round1(selectedCatalogFood.fat*quantity);
+    var portion=document.getElementById("food-selected-portion");
+    if(portion)portion.textContent=quantity+" × "+selectedCatalogFood.portion;
+  }
+  function selectCatalogFood(food){
+    selectedCatalogFood=food;
+    var box=document.getElementById("food-selected"),name=document.getElementById("food-selected-name"),qty=document.getElementById("food-quantity-input"),search=document.getElementById("food-search-input");
+    if(box)box.hidden=false;if(name)name.textContent=food.name;if(qty)qty.value="1";if(search)search.value=food.name;
+    applySelectedFood();renderFoodSuggestions(food.name);showToast("Valores preenchidos automaticamente");
+  }
+  function clearCatalogFood(clearSearch){
+    selectedCatalogFood=null;
+    var box=document.getElementById("food-selected"),search=document.getElementById("food-search-input"),qty=document.getElementById("food-quantity-input");
+    if(box)box.hidden=true;if(qty)qty.value="1";if(clearSearch&&search)search.value="";
+    renderFoodSuggestions(clearSearch?"":(search?search.value:""));
+  }
+  function renderFoodSuggestions(value){
+    var box=document.getElementById("food-suggestions");if(!box)return;
+    var query=normalizeFoodText(value),matches=FOOD_CATALOG.filter(function(food){return foodMatches(food,query);}).slice(0,10);
+    box.innerHTML="";
+    if(!matches.length){box.innerHTML='<div class="food-empty">Nenhum alimento encontrado. Você ainda pode preencher manualmente.</div>';return;}
+    matches.forEach(function(food){
+      var button=document.createElement("button");button.type="button";button.className="food-suggestion"+(selectedCatalogFood===food?" selected":"");
+      button.innerHTML="<b>"+escapeHtml(food.name)+"</b><span>"+escapeHtml(food.portion)+" · "+food.calories+" kcal</span>";
+      button.addEventListener("click",function(){selectCatalogFood(food);});box.appendChild(button);
+    });
+  }
   function nutritionPercent(value,target){
     if(!(target>0)) return 0;
     return Math.max(0,Math.min(100,Math.round((Number(value||0)/target)*100)));
@@ -747,6 +830,7 @@ function renderWorkout(){
     var type=document.getElementById("meal-type-input");if(type)type.value="Café da manhã";
     var btn=document.getElementById("btn-add-meal");if(btn)btn.textContent="Adicionar refeição";
     var cancel=document.getElementById("btn-cancel-meal-edit");if(cancel)cancel.style.display="none";
+    clearCatalogFood(true);
   }
   function editMeal(index){
     ensureV1Fresh(); var m=(state.mealHistory[selectedNutritionDate]||[])[index]; if(!m)return;
@@ -759,6 +843,7 @@ function renderWorkout(){
     document.getElementById("meal-fat-input").value=m.fat||"";
     document.getElementById("btn-add-meal").textContent="Salvar alterações";
     document.getElementById("btn-cancel-meal-edit").style.display="";
+    clearCatalogFood(true);
     document.getElementById("meal-name-input").focus();
     document.getElementById("meal-name-input").scrollIntoView({behavior:"smooth",block:"center"});
   }
@@ -795,7 +880,7 @@ function renderWorkout(){
       row.querySelector('[data-copy]').addEventListener('click',function(){
         var copy=Object.assign({},m);copy.time=pad(new Date().getHours())+":"+pad(new Date().getMinutes());
         (state.mealHistory[selectedNutritionDate]||(state.mealHistory[selectedNutritionDate]=[])).push(copy);
-        recalcNutritionForDate(selectedNutritionDate);renderV1Dashboard();showToast("Refeição duplicada");
+        recalcNutritionDate(selectedNutritionDate);renderMealHistory();renderNutritionSelectedDay();renderNutritionWeek();if(selectedNutritionDate===todayStr())renderV1Dashboard();showToast("Refeição duplicada");
       });
       row.querySelector('[data-edit]').addEventListener('click',function(){editMeal(index);}); row.querySelector('[data-remove]').addEventListener('click',function(){removeMeal(index);}); box.appendChild(row);
     });
@@ -1280,6 +1365,12 @@ function renderWorkout(){
     input.value = "";
   });
 
+  var foodSearchInput=document.getElementById("food-search-input"),foodSearchClear=document.getElementById("food-search-clear"),foodQuantityInput=document.getElementById("food-quantity-input");
+  if(foodSearchInput)foodSearchInput.addEventListener("input",function(){if(selectedCatalogFood&&normalizeFoodText(this.value)!==normalizeFoodText(selectedCatalogFood.name))selectedCatalogFood=null;var selected=document.getElementById("food-selected");if(selected&&!selectedCatalogFood)selected.hidden=true;renderFoodSuggestions(this.value);});
+  if(foodSearchInput)foodSearchInput.addEventListener("focus",function(){renderFoodSuggestions(this.value);});
+  if(foodSearchClear)foodSearchClear.addEventListener("click",function(){clearCatalogFood(true);if(foodSearchInput)foodSearchInput.focus();});
+  if(foodQuantityInput)foodQuantityInput.addEventListener("input",applySelectedFood);
+  renderFoodSuggestions("");
 
   document.querySelectorAll('[data-cal]').forEach(function(b){b.addEventListener('click',function(){ensureV1Fresh();var add=parseInt(b.getAttribute('data-cal'),10);state.dailyNutrition.calories+=add;var now=new Date();state.mealHistory[todayStr()].push({time:pad(now.getHours())+':'+pad(now.getMinutes()),name:'Ajuste rápido',label:'Ajuste rápido',type:'Outro',calories:add,protein:0,carbs:0,fat:0});updateAutoNutritionHabits();saveNutritionDay();save();renderV1Dashboard();renderInicio();});});
   document.querySelectorAll('[data-pro]').forEach(function(b){b.addEventListener('click',function(){ensureV1Fresh();var add=parseInt(b.getAttribute('data-pro'),10);state.dailyNutrition.protein+=add;var now=new Date();state.mealHistory[todayStr()].push({time:pad(now.getHours())+':'+pad(now.getMinutes()),name:'Ajuste rápido',label:'Ajuste rápido',type:'Outro',calories:0,protein:add,carbs:0,fat:0});updateAutoNutritionHabits();saveNutritionDay();save();renderV1Dashboard();renderInicio();});});
@@ -1293,17 +1384,17 @@ function renderWorkout(){
     var p=parseFloat(document.getElementById('meal-pro-input').value)||0;
     var carb=parseFloat(document.getElementById('meal-carb-input').value)||0;
     var fat=parseFloat(document.getElementById('meal-fat-input').value)||0;
-    if(c<=0&&p<=0&&carb<=0&&fat<=0){showToast('Informe pelo menos um valor nutricional');return;}
+    if(c<=0&&p<=0&&carb<=0&&fat<=0&&!selectedCatalogFood){showToast('Informe pelo menos um valor nutricional');return;}
     if(!name)name=type;
     c=Math.max(0,Math.round(c));p=Math.max(0,Math.round(p*10)/10);carb=Math.max(0,Math.round(carb*10)/10);fat=Math.max(0,Math.round(fat*10)/10);
     var arr=state.mealHistory[selectedNutritionDate]||[];
     if(mealEditIndex!==null && arr[mealEditIndex]){
       var old=arr[mealEditIndex];
-      arr[mealEditIndex]={time:old.time||pad(new Date().getHours())+':'+pad(new Date().getMinutes()),name:name,label:name,type:type,calories:c,protein:p,carbs:carb,fat:fat};
+      arr[mealEditIndex]={time:old.time||pad(new Date().getHours())+':'+pad(new Date().getMinutes()),name:name,label:name,type:type,calories:c,protein:p,carbs:carb,fat:fat,catalogPortion:selectedCatalogFood?selectedCatalogFood.portion:null,catalogQuantity:selectedCatalogFood?foodQuantity():null};
       showToast('Refeição atualizada');
     }else{
       var now=new Date();
-      arr.push({time:pad(now.getHours())+':'+pad(now.getMinutes()),name:name,label:name,type:type,calories:c,protein:p,carbs:carb,fat:fat});
+      arr.push({time:pad(now.getHours())+':'+pad(now.getMinutes()),name:name,label:name,type:type,calories:c,protein:p,carbs:carb,fat:fat,catalogPortion:selectedCatalogFood?selectedCatalogFood.portion:null,catalogQuantity:selectedCatalogFood?foodQuantity():null});
       showToast('Refeição adicionada');
     }
     state.mealHistory[selectedNutritionDate]=arr; recalcNutritionDate(selectedNutritionDate); clearMealForm();
@@ -1320,8 +1411,26 @@ function renderWorkout(){
   var editorSaveBtn=document.getElementById('btn-editor-save'); if(editorSaveBtn)editorSaveBtn.addEventListener('click',saveExerciseFromEditor);
   var workoutEditorModal=document.getElementById('workout-editor-modal'); if(workoutEditorModal)workoutEditorModal.addEventListener('click',function(ev){if(ev.target===workoutEditorModal)closeWorkoutEditor();});
   var finishWorkoutBtn=document.getElementById('btn-finish-workout'); if(finishWorkoutBtn) finishWorkoutBtn.addEventListener('click',finishWorkoutSession);
-  function saveHabitNumbers(){ensureV1Fresh();var si=document.getElementById('steps-input'),sl=document.getElementById('sleep-input');if(si){var sv=parseInt(si.value,10);state.todayHabits.stepsCount=isNaN(sv)?0:Math.max(0,sv);}if(sl){var sh=parseFloat((sl.value||'').replace(',','.'));state.todayHabits.sleepHours=isNaN(sh)?0:Math.max(0,Math.min(14,Math.round(sh*10)/10));}updateAutoNutritionHabits();state.habitHistory[todayStr()]=Object.assign({},state.todayHabits);save();renderV1Dashboard();renderInicio();}
-  var stepsInput=document.getElementById('steps-input'),sleepInput=document.getElementById('sleep-input');if(stepsInput)stepsInput.addEventListener('change',saveHabitNumbers);if(sleepInput)sleepInput.addEventListener('change',saveHabitNumbers);
+  function saveHabitNumbers(kind,quiet){
+    ensureV1Fresh();var si=document.getElementById('steps-input'),sl=document.getElementById('sleep-input'),message='';
+    if(kind==='steps'){
+      if(!si||String(si.value).trim()===''){if(!quiet)showToast('Digite a quantidade de passos');return false;}
+      var sv=parseInt(si.value,10);if(isNaN(sv)||sv<0||sv>200000){showToast('Digite uma quantidade válida de passos');return false;}
+      state.todayHabits.stepsCount=Math.round(sv);message=state.todayHabits.stepsCount.toLocaleString('pt-BR')+' passos salvos';
+    }
+    if(kind==='sleep'){
+      if(!sl||String(sl.value).trim()===''){if(!quiet)showToast('Digite as horas de sono');return false;}
+      var sh=parseFloat(String(sl.value).replace(',','.'));if(isNaN(sh)||sh<0||sh>14){showToast('Informe um sono entre 0 e 14 horas');return false;}
+      state.todayHabits.sleepHours=Math.round(sh*10)/10;message=String(state.todayHabits.sleepHours).replace('.',',')+' h de sono salvas';
+    }
+    updateAutoNutritionHabits();state.habitHistory[todayStr()]=Object.assign({},state.todayHabits);save();renderV1Dashboard();renderInicio();
+    var status=document.getElementById('habit-save-status');if(status){status.textContent='✓ '+message;status.classList.add('saved');setTimeout(function(){status.classList.remove('saved');},1800);}
+    if(!quiet)showToast(message);return true;
+  }
+  var stepsInput=document.getElementById('steps-input'),sleepInput=document.getElementById('sleep-input');
+  document.querySelectorAll('[data-save-habit]').forEach(function(button){button.addEventListener('click',function(){saveHabitNumbers(button.getAttribute('data-save-habit'),false);});});
+  if(stepsInput){stepsInput.addEventListener('change',function(){saveHabitNumbers('steps',true);});stepsInput.addEventListener('keydown',function(event){if(event.key==='Enter'){event.preventDefault();saveHabitNumbers('steps',false);stepsInput.blur();}});}
+  if(sleepInput){sleepInput.addEventListener('change',function(){saveHabitNumbers('sleep',true);});sleepInput.addEventListener('keydown',function(event){if(event.key==='Enter'){event.preventDefault();saveHabitNumbers('sleep',false);sleepInput.blur();}});}
   document.getElementById('btn-save-measures').addEventListener('click',function(){
     var ids={waist:'m-waist',abdomen:'m-abdomen',chest:'m-chest',arm:'m-arm',thigh:'m-thigh',hip:'m-hip'},m={date:measureEditDate||todayStr()},any=false;
     Object.keys(ids).forEach(function(k){var v=parseFloat((document.getElementById(ids[k]).value||'').replace(',','.'));if(!isNaN(v)&&v>0){m[k]=Math.round(v*10)/10;any=true;}});
