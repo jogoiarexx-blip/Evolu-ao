@@ -1,4 +1,4 @@
-const VERSION = "evolucao-1.2.1-smart-notifications";
+const VERSION = "evolucao-1.2.2-smart-foods";
 const CACHE = VERSION;
 const CORE = ["./","./index.html","./css/style.css","./js/app.js","./js/build-info.js","./js/migrations.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE))); });

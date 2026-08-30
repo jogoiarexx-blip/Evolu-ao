@@ -104,9 +104,10 @@
           <div class="quick-card"><div class="q-label">Proteína hoje</div><div class="q-value"><span id="protein-today">0</span> g</div><div class="q-sub">meta <span id="protein-goal-mini">--</span></div><div class="quick-actions"><button data-pro="10">+10g</button><button data-pro="25">+25g</button><button id="pro-reset">zerar</button></div></div>
         </div>
         <div class="habit-input-grid">
-          <div class="habit-input-card"><label>Passos de hoje</label><div class="habit-input-row"><input id="steps-input" type="number" min="0" step="100" inputmode="numeric" placeholder="0"><span>/ <b id="steps-goal-inline">--</b></span></div></div>
-          <div class="habit-input-card"><label>Sono da última noite</label><div class="habit-input-row"><input id="sleep-input" type="number" min="0" max="14" step="0.1" inputmode="decimal" placeholder="0"><span>/ <b id="sleep-goal-inline">8h</b></span></div></div>
+          <div class="habit-input-card"><label for="steps-input">Passos de hoje</label><div class="habit-input-row"><input id="steps-input" type="number" min="0" step="100" inputmode="numeric" placeholder="0"><span>/ <b id="steps-goal-inline">--</b></span></div><button class="habit-save-btn" type="button" data-save-habit="steps">Salvar passos</button></div>
+          <div class="habit-input-card"><label for="sleep-input">Sono da última noite</label><div class="habit-input-row"><input id="sleep-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 7,5"><span>/ <b id="sleep-goal-inline">8h</b></span></div><button class="habit-save-btn" type="button" data-save-habit="sleep">Salvar sono</button></div>
         </div>
+        <div class="habit-save-status" id="habit-save-status" role="status" aria-live="polite">Digite o valor e toque em salvar.</div>
       </div>
 
       <h2 class="section-title">Sua semana</h2>
@@ -256,6 +257,18 @@
 
       <h2 class="section-title" id="meal-entry-title">Adicionar refeição</h2>
       <div class="nutrition-card glass meal-entry-card">
+        <div class="food-catalog">
+          <div class="food-catalog-title"><div><b>Busca inteligente</b><span>Escolha o alimento e ajuste a quantidade.</span></div><span class="tag-soft">automático</span></div>
+          <div class="food-search-wrap">
+            <input id="food-search-input" type="search" autocomplete="off" placeholder="Ex.: maçã, café, arroz, carne..." aria-label="Buscar alimento">
+            <button type="button" id="food-search-clear" aria-label="Limpar busca">×</button>
+          </div>
+          <div class="food-suggestions" id="food-suggestions"></div>
+          <div class="food-selected" id="food-selected" hidden>
+            <div><b id="food-selected-name">Alimento</b><span id="food-selected-portion">Porção</span></div>
+            <label><span>Quantidade</span><input id="food-quantity-input" type="number" min="0.25" max="20" step="0.25" inputmode="decimal" value="1"></label>
+          </div>
+        </div>
         <div class="meal-entry-top">
           <input id="meal-name-input" type="text" maxlength="40" placeholder="Nome da refeição ou alimento">
           <select id="meal-type-input" aria-label="Tipo da refeição">
